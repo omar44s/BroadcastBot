@@ -34,20 +34,7 @@ module.exports = {
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
             .setMaxLength(4000)
-            .setPlaceholder(`مثال:
-
-السلام عليكم
-
-🚀 تم توفير كمية محدودة
-
-السعر:
-18.99
-
-🟢 ضمان كامل
-⚡ تسليم فوري
-
-للشراء:
-https://your-link.com`);
+    .setPlaceholder("اكتب رسالة البرودكاست هنا...")
 
         const row = new ActionRowBuilder().addComponents(message);
 
