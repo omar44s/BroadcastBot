@@ -1,74 +1,59 @@
 const {
     SlashCommandBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    ActionRowBuilder,
     PermissionFlagsBits
 } = require("discord.js");
 
-const OWNER_ID = "995964822711713842"; // حط ايدي حسابك هنا
+const OWNER_ID = "995964822711713842"; // حط ايديك هنا
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("broadcast")
-        .setDescription("إرسال برودكاست في الخاص لجميع أعضاء السيرفر")
-        .addStringOption(option =>
-            option
-                .setName("message")
-                .setDescription("اكتب الرسالة")
-                .setRequired(true)
-        )
+        .setDescription("إرسال برودكاست")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
     async execute(interaction) {
 
         if (interaction.user.id !== OWNER_ID) {
             return interaction.reply({
-                content: "❌ ليس لديك صلاحية لاستخدام هذا الأمر.",
+                content: "❌ ليس لديك صلاحية.",
                 ephemeral: true
             });
         }
 
-        const message = interaction.options.getString("message");
+        const modal = new ModalBuilder()
+            .setCustomId("broadcast_modal")
+            .setTitle("إرسال برودكاست");
 
-        await interaction.reply({
-            content: "📤 جاري إرسال البرودكاست...",
-            ephemeral: true
-        });
+        const message = new TextInputBuilder()
+            .setCustomId("broadcast_message")
+            .setLabel("اكتب رسالة البرودكاست")
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired(true)
+            .setMaxLength(4000)
+            .setPlaceholder(`مثال:
 
-        const members = await interaction.guild.members.fetch();
+السلام عليكم
 
-        let sent = 0;
-        let failed = 0;
+🚀 تم توفير كمية محدودة
 
-        for (const [, member] of members) {
+السعر:
+18.99
 
-            if (member.user.bot) continue;
+🟢 ضمان كامل
+⚡ تسليم فوري
 
-            try {
+للشراء:
+https://your-link.com`);
 
-                await member.send({
-                    content: `<@${member.id}>\n\n${message}`,
-                    allowedMentions: {
-                        users: [member.id]
-                    }
-                });
+        const row = new ActionRowBuilder().addComponents(message);
 
-                sent++;
+        modal.addComponents(row);
 
-            } catch (err) {
-
-                failed++;
-
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 1200));
-        }
-
-        await interaction.editReply({
-            content:
-`✅ انتهى البرودكاست
-
-📨 تم الإرسال: ${sent}
-❌ فشل: ${failed}`
-        });
+        await interaction.showModal(modal);
 
     }
 };
