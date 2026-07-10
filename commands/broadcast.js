@@ -44,19 +44,26 @@ module.exports = {
 
             try {
 
-                await member.send(message);
+for (const [, member] of members) {
 
-                sent++;
+    if (member.user.bot) continue;
 
-            } catch {
+    try {
 
-                failed++;
+        await member.send({
+            content: `<@${member.user.id}>\n\n${message}`
+        });
 
-            }
+        sent++;
 
-            await new Promise(r => setTimeout(r, 1000));
-        }
+    } catch {
 
+        failed++;
+
+    }
+
+    await new Promise(r => setTimeout(r, 1000));
+}
         await interaction.editReply({
             content:
 `✅ انتهى البرودكاست
