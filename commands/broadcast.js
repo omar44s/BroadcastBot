@@ -3,7 +3,7 @@ const {
     PermissionFlagsBits
 } = require("discord.js");
 
-const OWNER_ID = "995964822711713842";
+const OWNER_ID = "995964822711713842"; // حط ايدي حسابك هنا
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,7 +12,7 @@ module.exports = {
         .addStringOption(option =>
             option
                 .setName("message")
-                .setDescription("الرسالة")
+                .setDescription("اكتب الرسالة")
                 .setRequired(true)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -21,7 +21,7 @@ module.exports = {
 
         if (interaction.user.id !== OWNER_ID) {
             return interaction.reply({
-                content: "❌ ليس لديك صلاحية.",
+                content: "❌ ليس لديك صلاحية لاستخدام هذا الأمر.",
                 ephemeral: true
             });
         }
@@ -29,7 +29,7 @@ module.exports = {
         const message = interaction.options.getString("message");
 
         await interaction.reply({
-            content: "📤 بدأ إرسال البرودكاست...",
+            content: "📤 جاري إرسال البرودكاست...",
             ephemeral: true
         });
 
@@ -44,26 +44,24 @@ module.exports = {
 
             try {
 
-for (const [, member] of members) {
+                await member.send({
+                    content: `<@${member.id}>\n\n${message}`,
+                    allowedMentions: {
+                        users: [member.id]
+                    }
+                });
 
-    if (member.user.bot) continue;
+                sent++;
 
-    try {
+            } catch (err) {
 
-        await member.send({
-            content: `<@${member.user.id}>\n\n${message}`
-        });
+                failed++;
 
-        sent++;
+            }
 
-    } catch {
+            await new Promise(resolve => setTimeout(resolve, 1200));
+        }
 
-        failed++;
-
-    }
-
-    await new Promise(r => setTimeout(r, 1000));
-}
         await interaction.editReply({
             content:
 `✅ انتهى البرودكاست
