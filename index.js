@@ -71,12 +71,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
             try {
 
-                await member.send({
-                    content: `<@${member.id}>\n\n${message}`,
-                    allowedMentions: {
-                        users: [member.id]
-                    }
-                });
+await member.send({
+    content: `${message}\n\n${member.user}`,
+});
 
                 sent++;
 
