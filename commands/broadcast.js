@@ -7,9 +7,10 @@ const {
     PermissionFlagsBits
 } = require("discord.js");
 
-const OWNER_ID = "995964822711713842"; // حط ايديك هنا
+const OWNER_ID = "995964822711713842"; // حط ايديك
 
 module.exports = {
+
     data: new SlashCommandBuilder()
         .setName("broadcast")
         .setDescription("إرسال برودكاست")
@@ -26,21 +27,21 @@ module.exports = {
 
         const modal = new ModalBuilder()
             .setCustomId("broadcast_modal")
-            .setTitle("إرسال برودكاست");
+            .setTitle("Broadcast");
 
-        const message = new TextInputBuilder()
-            .setCustomId("broadcast_message")
+        const input = new TextInputBuilder()
+            .setCustomId("message")
             .setLabel("اكتب رسالة البرودكاست")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
-            .setMaxLength(4000)
-    .setPlaceholder("اكتب رسالة البرودكاست هنا...")
+            .setPlaceholder("اكتب رسالتك هنا...");
 
-        const row = new ActionRowBuilder().addComponents(message);
+        const row = new ActionRowBuilder().addComponents(input);
 
         modal.addComponents(row);
 
         await interaction.showModal(modal);
 
     }
+
 };

@@ -1,59 +1,100 @@
-require("dotenv").config();
-
-const fs = require("fs");
-const path = require("path");
-
 const {
     Client,
-    Collection,
     GatewayIntentBits,
-    Partials
+    Collection,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    ActionRowBuilder,
+    Events
 } = require("discord.js");
 
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers
-    ],
-    partials: [Partials.Channel]
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.DirectMessages
+    ]
 });
 
 client.commands = new Collection();
 
-// تحميل الأوامر
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
+client.commands.set(
+    "broadcast",
+    require("./commands/broadcast")
+);
 
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
-}
+client.once(Events.ClientReady, async () => {
 
-// تحميل الأحداث
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith(".js"));
+    console.log(`✅ Logged in as ${client.user.tag}`);
 
-for (const file of eventFiles) {
-    const event = require(`./events/${file}`);
+    await client.application.commands.set([
+        client.commands.get("broadcast").data
+    ]);
 
-    if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args));
-    } else {
-        client.on(event.name, (...args) => event.execute(...args));
+    console.log("✅ Slash Commands Loaded");
+
+});
+
+client.on(Events.InteractionCreate, async interaction => {
+
+    if (interaction.isChatInputCommand()) {
+
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command) return;
+
+        return command.execute(interaction);
+
     }
-}
 
-client.on("interactionCreate", async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+    if (interaction.isModalSubmit()) {
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+        if (interaction.customId !== "broadcast_modal") return;
 
-    try {
-        await command.execute(interaction);
-    } catch (err) {
-        console.error(err);
+        const message =
+            interaction.fields.getTextInputValue("message");
+
+        await interaction.reply({
+            content: "📤 بدأ إرسال البرودكاست...",
+            ephemeral: true
+        });
+
+        const members = await interaction.guild.members.fetch();
+
+        let sent = 0;
+        let failed = 0;
+
+        for (const [, member] of members) {
+
+            if (member.user.bot) continue;
+
+            try {
+
+                await member.send(message);
+
+                sent++;
+
+            } catch {
+
+                failed++;
+
+            }
+
+            await new Promise(r => setTimeout(r, 1000));
+
+        }
+
+        await interaction.editReply({
+            content:
+`✅ انتهى البرودكاست
+
+📨 تم الإرسال: ${sent}
+❌ فشل: ${failed}`
+        });
+
     }
+
 });
 
 client.login(process.env.TOKEN);
